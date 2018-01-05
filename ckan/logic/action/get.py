@@ -339,7 +339,10 @@ def _group_or_org_list(context, data_dict, is_org=False):
     sort = data_dict.get('sort') or 'title'
     q = data_dict.get('q')
 
-    all_fields = asbool(data_dict.get('all_fields', None))
+    try:
+        all_fields = asbool(data_dict.get('all_fields', None)) 
+    except ValueError:
+        all_fields = False
 
     # order_by deprecated in ckan 1.8
     # if it is supplied and sort isn't use order_by and raise a warning
@@ -525,6 +528,8 @@ def organization_list(context, data_dict):
 
     '''
     _check_access('organization_list', context, data_dict)
+    log.info(data_dict)
+    log.info(context)
     data_dict['groups'] = data_dict.pop('organizations', [])
     data_dict.setdefault('type', 'organization')
     return _group_or_org_list(context, data_dict, is_org=True)
