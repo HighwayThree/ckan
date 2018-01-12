@@ -1862,6 +1862,9 @@ def package_search(context, data_dict):
     for item in plugins.PluginImplementations(plugins.IPackageController):
         data_dict = item.before_search(data_dict)
 
+    # set include_tracking boolean, some extension may have altered this
+    include_tracking = asbool(data_dict['extras'].get('include_tracking', False))
+
     # the extension may have decided that it is not necessary to perform
     # the query
     abort = data_dict.get('abort_search', False)
@@ -1913,6 +1916,10 @@ def package_search(context, data_dict):
                 if package.get('extras'):
                     package.update(package['extras'] )
                     package.pop('extras')
+                #include trackin_summary if include_tracking is True
+                if include_tracking:
+                    package['tracking_summary'] = (model.TrackingSummary.get_for_package(package['id']))
+
                 results.append(package)
         else:
             for package in query.results:
@@ -1926,6 +1933,10 @@ def package_search(context, data_dict):
                         for item in plugins.PluginImplementations(
                                 plugins.IPackageController):
                             package_dict = item.before_view(package_dict)
+                    #include trackin_summary if include_tracking is True
+                    if include_tracking:
+                        package_dict['tracking_summary'] = (model.TrackingSummary.get_for_package(package_dict['id']))
+                    
                     results.append(package_dict)
                 else:
                     log.error('No package_dict is coming from solr for package '
